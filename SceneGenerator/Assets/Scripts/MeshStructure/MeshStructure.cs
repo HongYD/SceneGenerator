@@ -2,6 +2,17 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum HeightPattern
+{
+    Flat,
+    Saddle,
+    Ramp,
+    One_Hight,
+    Three_Hight,
+    Steep,
+    Count,
+}
+
 //Mesh的数据结构
 public class MeshStructure : SingletonMono<MeshStructure>
 {
@@ -26,7 +37,7 @@ public class MeshStructure : SingletonMono<MeshStructure>
         base.Awake();
     }
 
-    public void GenerateMesh(Grid grid,float squareSize,MeshFilter floorMesh,MeshFilter wallMesh, float[,] heightMap)
+    public void GenerateMesh(Grid grid,float squareSize,MeshFilter floorMesh,MeshFilter wallMesh, float[,] heightMap, string randomSeed)
     {
         trianglesDict.Clear();
         outlines.Clear();
@@ -324,6 +335,7 @@ public class ControlPoint : Point
 //四边形
 public class Square
 {
+    public float heightStep = 0.2f;
     public ControlPoint topLeft, topRight, bottomLeft, bottomRight;
     public Point midTop, midBottom, midLeft, midRight;
     public int configuration;
@@ -335,6 +347,7 @@ public class Square
         bottomRight = _bottomRight;
         bottomLeft = _bottomLeft;
 
+        GetCurrentHeightMap();
 
         midTop = topLeft.right;
         midRight = bottomRight.above;
@@ -350,6 +363,66 @@ public class Square
             configuration += 2;
         if (bottomLeft.active)
             configuration += 1;
+    }
+
+    public void GetCurrentHeightMap()
+    {
+        System.Random random = new System.Random();
+        switch(random.Next(0, (int)HeightPattern.Count)+2)
+        {
+            case 0:
+                ModifyVertexHightByPattern(HeightPattern.Flat);
+                break;
+            case 1:
+                ModifyVertexHightByPattern(HeightPattern.Saddle);
+                break;
+            case 2:
+                ModifyVertexHightByPattern(HeightPattern.Ramp);
+                break;
+            case 3:
+                ModifyVertexHightByPattern(HeightPattern.One_Hight);
+                break;
+            case 4:
+                ModifyVertexHightByPattern(HeightPattern.Three_Hight);
+                break;
+            case 5:
+                ModifyVertexHightByPattern(HeightPattern.Steep);
+                break;
+            default:
+                ModifyVertexHightByPattern(HeightPattern.Flat);
+                break;
+        }
+    }
+
+    public void ModifyVertexHightByPattern(HeightPattern pattern)
+    {
+        switch(pattern)
+        {
+            case HeightPattern.Flat:
+                break;
+            case HeightPattern.Saddle:
+                bottomLeft.position.y += heightStep;
+                topRight.position.y += heightStep;
+                break;
+            case HeightPattern.Ramp:
+                topRight.position.y += heightStep;
+                topLeft.position.y += heightStep;
+                break;
+            case HeightPattern.One_Hight:
+                topLeft.position.y += heightStep;
+                break;
+            case HeightPattern.Three_Hight:
+                bottomLeft.position.y += heightStep;
+                topRight.position.y += heightStep;
+                break;
+            case HeightPattern.Steep:
+                bottomLeft.position.y += heightStep;
+                topLeft.position.y += heightStep;
+                break;
+            default:
+                break;
+
+        }
     }
 }
 
@@ -367,7 +440,7 @@ public class SquareGrid
         {
             for(int y=0;y<nodeCountY;y++)
             {
-                Vector3 pos = new Vector3((grid.grid[x, y].worldPosition.x - grid.nodeRadius), heightMap[x, y], (grid.grid[x, y].worldPosition.z - grid.nodeRadius));
+                Vector3 pos = new Vector3((grid.grid[x, y].worldPosition.x - grid.nodeRadius), /*heightMap[x, y]*/1.0f, (grid.grid[x, y].worldPosition.z - grid.nodeRadius));
                 controlPoints[x, y] = new ControlPoint(pos, true, squareSize);
             }
         }

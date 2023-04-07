@@ -26,6 +26,6 @@ public class MeshGenerator : MonoBehaviour
         Grid.Instance.CreateGrid();
         randomSeed = Time.time.ToString();
         heightMap = Commons.GetPerlinNoiseHeightMap(Grid.Instance.gridXNodeNum, Grid.Instance.gridYNodeNum, scale, octaves, persistance, lacunarity);
-        MeshStructure.Instance.GenerateMesh(Grid.Instance, Grid.Instance.nodeRadius * 2.0f,floor,walls, heightMap);
+        MeshStructure.Instance.GenerateMesh(Grid.Instance, Grid.Instance.nodeRadius * 2.0f,floor,walls, heightMap, randomSeed);
     }
 }
