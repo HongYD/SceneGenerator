@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public enum HeightPattern
@@ -19,10 +20,14 @@ public class MeshStructure : SingletonMono<MeshStructure>
     private SquareGrid squareGrid;
     private List<Vector3> vertices;//点位置List
     private List<int> triangles;//三角形顶点索引
-    private List<Triangle> trianglesMesh;
+    private List<Triangle> trianglesMesh;//顺时针存放三角形顶点
     private List<List<int>> outlines = new List<List<int>>();
     HashSet<int> checkedVertices= new HashSet<int>();
     private Vector2[] uvs;
+
+    private string path = @"Assets/Prefabs/Tree.fbx";
+    private Transform pivots;
+    private GameObject treePrefab;
 
     public int Size
     {
@@ -35,9 +40,10 @@ public class MeshStructure : SingletonMono<MeshStructure>
     protected override void Awake()
     {
         base.Awake();
+        treePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
     }
 
-    public void GenerateMesh(Grid grid,float squareSize,MeshFilter floorMesh,MeshFilter wallMesh, float[,] heightMap, string randomSeed)
+    public void GenerateMesh(Grid grid,float squareSize,MeshFilter floorMesh,MeshFilter wallMesh)
     {
         trianglesDict.Clear();
         outlines.Clear();
@@ -46,7 +52,7 @@ public class MeshStructure : SingletonMono<MeshStructure>
         trianglesMesh = new List<Triangle>();
         checkedVertices.Clear();
 
-        squareGrid = new SquareGrid(grid, squareSize, heightMap);
+        squareGrid = new SquareGrid(grid, squareSize);
         for (int i = 0; i < squareGrid.squares.GetLength(0); i++)
         {
             for(int j = 0; j < squareGrid.squares.GetLength(1); j++)
@@ -61,6 +67,29 @@ public class MeshStructure : SingletonMono<MeshStructure>
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
         GenerateWallsMesh(wallMesh);
+        GenerateTree();
+    }
+
+    private void GenerateTree()
+    {
+        pivots = GameObject.Find("TreesPivot").transform;
+        System.Random random = new System.Random();
+        if(pivots.childCount > 0)
+        {
+            for(int i=0;i<pivots.childCount;i++)
+            {
+                Destroy(pivots.GetChild(i).gameObject);
+            }
+        }
+
+        for(int i=0;i<vertices.Count;i++)
+        {
+            if (random.Next(0, 100) < 5)
+            {
+                Instantiate(treePrefab, vertices[i], Quaternion.identity, pivots);
+            }
+        }
+
     }
 
     #region Generate walls
@@ -85,7 +114,7 @@ public class MeshStructure : SingletonMono<MeshStructure>
                 wallVertices.Add(vertices[outline[i]] - Vector3.up * wallHeight); // bottom left
                 wallVertices.Add(vertices[outline[i + 1]] - Vector3.up * wallHeight); // bottom right
 
-                //逆时针渲染，法向量朝外
+                //逆时针渲染，法向量朝相机
                 wallTriangles.Add(startIndex + 0);
                 wallTriangles.Add(startIndex + 3);
                 wallTriangles.Add(startIndex + 2);
@@ -196,7 +225,7 @@ public class MeshStructure : SingletonMono<MeshStructure>
     }
     #endregion
 
-    //Matching Square
+    //Matching Square的16种pattern
     void TriangulateSquare(Square square)
     {
         switch (square.configuration)
@@ -367,8 +396,10 @@ public class Square
 
     public void GetCurrentHeightMap()
     {
+        int hashCode = MeshGenerator.randomSeed.GetHashCode();
+        System.Random timeCode= new System.Random(hashCode);
         System.Random random = new System.Random();
-        switch(random.Next(0, (int)HeightPattern.Count)+2)
+        switch(random.Next(0, ((int)HeightPattern.Count + timeCode.Next(0, (int)HeightPattern.Count))))
         {
             case 0:
                 ModifyVertexHightByPattern(HeightPattern.Flat);
@@ -430,7 +461,7 @@ public class Square
 public class SquareGrid
 {
     public Square[,] squares;
-    public SquareGrid(Grid grid, float squareSize, float[,] heightMap)
+    public SquareGrid(Grid grid, float squareSize)
     {
         int nodeCountX = grid.gridXNodeNum;
         int nodeCountY = grid.gridYNodeNum;
@@ -440,7 +471,7 @@ public class SquareGrid
         {
             for(int y=0;y<nodeCountY;y++)
             {
-                Vector3 pos = new Vector3((grid.grid[x, y].worldPosition.x - grid.nodeRadius), /*heightMap[x, y]*/1.0f, (grid.grid[x, y].worldPosition.z - grid.nodeRadius));
+                Vector3 pos = new Vector3((grid.grid[x, y].worldPosition.x - grid.nodeRadius), 1.0f, (grid.grid[x, y].worldPosition.z - grid.nodeRadius));
                 controlPoints[x, y] = new ControlPoint(pos, true, squareSize);
             }
         }
@@ -464,11 +495,9 @@ public class Triangle
     public int vertexIndexB;
     public int vertexIndexC;
     int[] vertices;
-    public Vector3[] VPos;
+    public Vector3[] VPos;//VPos渲染的时候没必要，可以用来种树
     public Vector3 pos;
     public int index = -1;
-
-    public int HeapIndex { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
     public Triangle(Point a,Point b, Point c)
     {

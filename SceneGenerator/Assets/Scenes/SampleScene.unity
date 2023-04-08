@@ -738,6 +738,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &946864831
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 946864832}
+  m_Layer: 0
+  m_Name: TreesPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &946864832
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946864831}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.0033813715, y: 4.4125566, z: -0.02809298}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -888,13 +919,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf5e6e901f62c854692b928238b749bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  randomSeed: 
   floor: {fileID: 1928088696}
   walls: {fileID: 831984433}
-  scale: 10
-  octaves: 3
-  persistance: 0.098
-  lacunarity: 2
 --- !u!1 &1456317274
 GameObject:
   m_ObjectHideFlags: 0
