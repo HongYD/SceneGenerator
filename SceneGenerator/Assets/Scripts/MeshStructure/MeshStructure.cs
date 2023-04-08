@@ -102,7 +102,7 @@ public class MeshStructure : SingletonMono<MeshStructure>
         List<Vector3> wallVertices = new List<Vector3>();
         List<int> wallTriangles = new List<int>();
         Mesh wallMesh = new Mesh();
-        int wallHeight = 5;
+        int wallHeight = 2;
 
         foreach (List<int> outline in outlines)
         {
